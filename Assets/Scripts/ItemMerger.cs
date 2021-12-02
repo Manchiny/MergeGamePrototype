@@ -22,7 +22,13 @@ public class ItemMerger : MonoBehaviour
         Destroy(gameObject);
     }
 
-
+    /// <summary>
+    /// Вычисляет цепочку находящихся рядом предметов, соответствующих пермещаемому
+    /// </summary>
+    /// <param name="mergeItem"></param>
+    /// <param name="callingCell"></param>
+    /// <param name="isCaller"></param>
+    /// <returns></returns>
     public bool TryMergeItems(Item mergeItem, Cell callingCell, bool isCaller)
     {
         List<Cell> Neighbors = callingCell.GetNeighbors();
@@ -42,7 +48,7 @@ public class ItemMerger : MonoBehaviour
         foreach (var neighbor in Neighbors)
         {
             lastCell = callingCell;
-            if (neighbor.ContentItem != null && neighbor.ContentItem.ID == mergeItem.ID)
+            if (neighbor.ContentItem != null && neighbor.ContentItem.Phase == mergeItem.Phase)
             {
                 mergeItems.Add(neighbor.ContentItem);
                 TryMergeItems(mergeItem, neighbor, false);
@@ -64,10 +70,10 @@ public class ItemMerger : MonoBehaviour
     private void MergeItems(Cell cell, Item mergeItem)
     {
         Debug.Log($"Merging {mergeItems.Count} items");
-        int? nextItemId = mergeItem.NextItemID;
+        int nextItemPhaseId = mergeItem.Phase + 1;
 
         MoveItemToCell(cell)
-            .Then(() => CreateNextItem(cell, nextItemId));
+            .Then(() => CreateNextItem(cell, nextItemPhaseId));
     }
 
     private IPromise MoveItemToCell(Cell cell)
@@ -78,7 +84,7 @@ public class ItemMerger : MonoBehaviour
         {
             var curItem = item;
             promises.Add(item.MoveToMergCell(cell)
-                .Then(() => DestroyItem(curItem)));           
+                .Then(() => DestroyItem(curItem)));
         }
         Debug.Log("All Items destoyed, creating new...");
 
@@ -86,19 +92,18 @@ public class ItemMerger : MonoBehaviour
     }
     private IPromise DestroyItem(Item item)
     {
-        Debug.Log("Item destoyed");
+        Destroy(item.gameObject);
         return Promise.Resolved();
     }
 
-    private Promise CreateNextItem(Cell cell, int? nextItemId)
+    private IPromise CreateNextItem(Cell cell, int nextItemPhaseId)
     {
         Debug.Log("Создаю новый предмет:");
         var promise = new Promise();
 
-        if (nextItemId != null)
-            ItemFabric.Instance.CreateItem(cell, (int)nextItemId);
+        ItemFabric.Instance.CreateItem(cell, nextItemPhaseId);
 
-        return promise;
+        return Promise.Resolved();
     }
 
 }

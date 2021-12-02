@@ -7,7 +7,8 @@ public class ItemFabric : MonoBehaviour
 {
     public static ItemFabric Instance { get; set; }
 
-    [SerializeField] private List<GameObject> _items;
+    [SerializeField] private GameObject _itemPrefab;
+
     private Vector3 _offset = new Vector3(0, 0, -0.01f);
     private void Awake()
     {
@@ -20,15 +21,11 @@ public class ItemFabric : MonoBehaviour
         }
         Destroy(gameObject);
     }
-   
-    public void CreateItem(Cell cell, int itemID)
+    public void CreateItem(Cell cell, int newPhaseID)
     {
-        GameObject itemPrefab = _items.Where(x=> x.GetComponent<Item>().ID == itemID).First();
-        if(itemPrefab)
-        {
-            GameObject itemModel = Instantiate(itemPrefab, cell.transform.position + _offset, Quaternion.identity);
-            Item item = itemModel.GetComponent<Item>();
-            item.SetCell(cell);
-        }
+        GameObject newItem = Instantiate(_itemPrefab, cell.transform.position + _offset, Quaternion.identity);
+        Item item = newItem.GetComponent<Item>();
+        item.SetPhase(newPhaseID);
+        item.SetCell(cell);
     }
 }

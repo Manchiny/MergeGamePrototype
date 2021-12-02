@@ -6,7 +6,7 @@ public class CameraItemDragMove : CameraMover
     private int _screenWidth;
     private int _screenHeight;
 
-    private float _borderTouchOffset = 100f;
+    private float _borderTouchOffset = 150f;
     public CameraItemDragMove(Camera camera, int screenHeight, int screenWidth)
     {
         _camera = camera;
@@ -34,7 +34,6 @@ public class CameraItemDragMove : CameraMover
         {
             targetPosition.y += 1;
         }
-
         return targetPosition;
     }
 }

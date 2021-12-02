@@ -20,7 +20,6 @@ public class ItemDrag : MonoBehaviour
         CameraController.Instance.IsItemDrag = true;
         _currentCell = _item.CurrentCell;
         _targetCell = null;
-       // _currentCell.ContentItem = null;
         _item.SetCell(null);
     }
 
@@ -39,7 +38,7 @@ public class ItemDrag : MonoBehaviour
             {
                 MoveToCell(_targetCell);
             }
-            else if(_targetCell.ContentItem.ID == _item.ID)
+            else if(_targetCell.ContentItem.Phase == _item.Phase)
             {
                 if(ItemMerger.Instance.TryMergeItems(_item, _targetCell, true)==true)
                 {

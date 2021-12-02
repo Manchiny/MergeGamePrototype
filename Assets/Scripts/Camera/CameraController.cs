@@ -5,40 +5,42 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
-
-    private int _screenWidth;
-    private int _screenHeight;
-
-    private float _speed = 6f;
+    [SerializeField] private float _speed = 6f;
 
     private Camera _camera;
 
+    private int _screenWidth, _screenHeight;
     private Vector3 targetPosition;
-
     private CameraMover _cameraMover;
     private CameraItemDragMove _cameraItemDragMove;
-    private CameraSwipeMove _cameraSwipeMove;
+    private CameraTouchMove _cameraTouchMove;
+
+    float touchesPrevPosDifference, touchesCurPosDifference, zoomModifire;
+    Vector2 firstTouchPrevPos, secondTouchPrevPos;
+
+    float zoomModifireSpeed = 0.02f;
 
     private bool _isItemDrag;
-    public bool IsItemDrag 
+    public bool IsItemDrag
     {
         get => _isItemDrag;
         set
-        {  
-            if(value == true)
+        {
+            if (value == true)
             {
                 _cameraMover = _cameraItemDragMove;
             }
             else
             {
-                _cameraMover = _cameraSwipeMove;
+                _cameraMover = _cameraTouchMove;
             }
         }
-    } 
+    }
 
+    public bool IsZoomig { get; private set; }
     private void Awake()
     {
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
@@ -47,7 +49,7 @@ public class CameraController : MonoBehaviour
 
             return;
         }
-        Destroy(gameObject);       
+        Destroy(gameObject);
     }
     private void Start()
     {
@@ -57,17 +59,51 @@ public class CameraController : MonoBehaviour
         _screenHeight = Screen.height;
 
         _cameraItemDragMove = new CameraItemDragMove(_camera, _screenHeight, _screenWidth);
-        _cameraSwipeMove = new CameraSwipeMove(_camera);
+        _cameraTouchMove = new CameraTouchMove(_camera);
 
         IsItemDrag = false;
     }
 
     private void Update()
     {
-        targetPosition =_cameraMover.UpdateTargetPosition();       
+        if (Input.touchCount == 2)
+        {
+            IsZoomig = true;
+            ZoomPinch();
+            return;
+        }
+        else
+        {
+            IsZoomig = false;
+            targetPosition = _cameraMover.UpdateTargetPosition();
+        }
+        
     }
     private void FixedUpdate()
     {
+        if (IsZoomig)
+            return;
+
         transform.position = Vector3.Lerp(transform.position, targetPosition, _speed * Time.deltaTime);
-    } 
+    }
+
+    private void ZoomPinch()
+    {
+
+        Touch firstTouch = Input.GetTouch(0);
+        Touch secondTouch = Input.GetTouch(1);
+
+        firstTouchPrevPos = firstTouch.position - firstTouch.deltaPosition;
+        secondTouchPrevPos = secondTouch.position - secondTouch.deltaPosition;
+
+        touchesPrevPosDifference = (firstTouchPrevPos - secondTouchPrevPos).magnitude;
+        touchesCurPosDifference = (firstTouch.position - secondTouch.position).magnitude;
+
+        zoomModifire = (firstTouch.deltaPosition - secondTouch.deltaPosition).magnitude * zoomModifireSpeed;
+
+        if (touchesPrevPosDifference > touchesCurPosDifference)
+            _camera.orthographicSize += zoomModifire;
+        if (touchesPrevPosDifference < touchesCurPosDifference)
+            _camera.orthographicSize -= zoomModifire;
+    }
 }
