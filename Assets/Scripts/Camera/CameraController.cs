@@ -1,14 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
     [SerializeField] private float _speed = 10f;
+    [SerializeField] private float _maxPosX;
+    [SerializeField] private float _maxPosY;
+
+    private float _zoomMin = 2f;
+    private float _zoomMax = 50f;
 
     private Camera _camera;
-
     private int _screenWidth, _screenHeight;
     private Vector3 _targetPosition;
     private CameraMover _cameraMover;
@@ -86,11 +88,17 @@ public class CameraController : MonoBehaviour
         if (IsZoomig)
             return;
 
-        transform.position = Vector3.Lerp(transform.position, _targetPosition, _speed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, 
+            new Vector3(
+                Mathf.Clamp(_targetPosition.x,-_maxPosX,_maxPosX), 
+                Mathf.Clamp(_targetPosition.y, -_maxPosY, _maxPosY), 
+                _targetPosition.z), 
+            _speed * Time.deltaTime);
     }
 
     private void ZoomPinch()
     {
+        float cameraOrthSize = _camera.orthographicSize;
 
         Touch firstTouch = Input.GetTouch(0);
         Touch secondTouch = Input.GetTouch(1);
@@ -104,8 +112,11 @@ public class CameraController : MonoBehaviour
         zoomModifire = (firstTouch.deltaPosition - secondTouch.deltaPosition).magnitude * zoomModifireSpeed;
 
         if (touchesPrevPosDifference > touchesCurPosDifference)
-            _camera.orthographicSize += zoomModifire;
+            cameraOrthSize += zoomModifire; 
         if (touchesPrevPosDifference < touchesCurPosDifference)
-            _camera.orthographicSize -= zoomModifire;
+            cameraOrthSize -= zoomModifire;
+
+        //_camera.orthographicSize = Mathf.Lerp(_camera.orthographicSize, Mathf.Clamp(cameraOrthSize, _zoomMin, _zoomMax), _speed);
+        _camera.orthographicSize = Mathf.Clamp(cameraOrthSize, _zoomMin, _zoomMax);
     }
 }

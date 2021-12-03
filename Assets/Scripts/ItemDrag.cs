@@ -8,7 +8,7 @@ public class ItemDrag : MonoBehaviour
     private Vector3 _offset = new Vector3(0, 0, -0.01f);
 
     private Item _item;
-    private Ground _currentCell;  
+    private Ground _currentCell;
     private Ground _targetCell;
     private void Awake()
     {
@@ -34,13 +34,13 @@ public class ItemDrag : MonoBehaviour
 
         if (_targetCell != null)
         {
-            if(_targetCell.ContentItem == null)
+            if (_targetCell.ContentItem == null)
             {
                 MoveToCell(_targetCell);
             }
-            else if(_targetCell.ContentItem.Phase == _item.Phase)
+            else if (_targetCell.ContentItem.Phase == _item.Phase)
             {
-                if(ItemMerger.Instance.TryMergeItems(_item, _targetCell, true)==true)
+                if (ItemMerger.Instance.TryMergeItems(_item, _targetCell, true) == true)
                 {
                     Debug.Log("Merge succses");
                     MoveToCell(_targetCell);
@@ -100,15 +100,10 @@ public class ItemDrag : MonoBehaviour
             ICell cell = hit.transform?.GetComponent<ICell>();
             if (hit.transform?.GetComponent<Ground>() == true && cell != _targetCell)
             {
-                //if (hit.transform.GetComponent<Ground>() != _targetCell)
-                //{
-                    _targetCell = hit.transform.GetComponent<Ground>();
-                //}           
+                _targetCell = hit.transform.GetComponent<Ground>();
             }
-
-            //return _targetCell.transform.position;
             return cell.transform.position;
-        }           
+        }
         else if ((hit.transform?.GetComponent<Item>() == true) && (hit.transform?.GetComponent<Item>() != _item))
         {
             _targetCell = hit.transform.GetComponent<Item>().CurrentCell;
