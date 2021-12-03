@@ -21,11 +21,11 @@ public class Item : MonoBehaviour
     {
         OnPhaseChanged?.Invoke();
     }
-    public Cell CurrentCell { get; private set; }
+    public Ground CurrentCell { get; private set; }
 
     public event Action OnPhaseChanged;
 
-    public IPromise MoveToMergCell(Cell cell )
+    public IPromise MoveToMergCell(Ground cell )
     {
         var promise = new Promise();
         float moveTime = 0.25f;
@@ -44,7 +44,7 @@ public class Item : MonoBehaviour
         return promise;
     }
 
-    public void SetCell(Cell newCell)
+    public void SetCell(Ground newCell)
     {
         if (CurrentCell != null)
         {

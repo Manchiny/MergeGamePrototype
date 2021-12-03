@@ -5,12 +5,12 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
-    [SerializeField] private float _speed = 6f;
+    [SerializeField] private float _speed = 10f;
 
     private Camera _camera;
 
     private int _screenWidth, _screenHeight;
-    private Vector3 targetPosition;
+    private Vector3 _targetPosition;
     private CameraMover _cameraMover;
     private CameraItemDragMove _cameraItemDragMove;
     private CameraTouchMove _cameraTouchMove;
@@ -28,10 +28,12 @@ public class CameraController : MonoBehaviour
         {
             if (value == true)
             {
+                _cameraItemDragMove.ResetTarget(_targetPosition);
                 _cameraMover = _cameraItemDragMove;
             }
             else
             {
+                _cameraTouchMove.ResetTarget(_targetPosition);
                 _cameraMover = _cameraTouchMove;
             }
         }
@@ -53,7 +55,7 @@ public class CameraController : MonoBehaviour
     }
     private void Start()
     {
-        targetPosition = transform.position;
+        _targetPosition = transform.position;
 
         _screenWidth = Screen.width;
         _screenHeight = Screen.height;
@@ -75,7 +77,7 @@ public class CameraController : MonoBehaviour
         else
         {
             IsZoomig = false;
-            targetPosition = _cameraMover.UpdateTargetPosition();
+            _targetPosition = _cameraMover.UpdateTargetPosition();
         }
         
     }
@@ -84,7 +86,7 @@ public class CameraController : MonoBehaviour
         if (IsZoomig)
             return;
 
-        transform.position = Vector3.Lerp(transform.position, targetPosition, _speed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, _targetPosition, _speed * Time.deltaTime);
     }
 
     private void ZoomPinch()

@@ -4,12 +4,12 @@ using UnityEngine;
 public class ItemDrag : MonoBehaviour
 {
     private Camera _camera;
-    private float _dragSpeed = 10f;
+    private float _dragSpeed = 20f;
     private Vector3 _offset = new Vector3(0, 0, -0.01f);
 
     private Item _item;
-    private Cell _currentCell;
-    private Cell _targetCell;
+    private Ground _currentCell;  
+    private Ground _targetCell;
     private void Awake()
     {
         _camera = Camera.main;
@@ -84,7 +84,7 @@ public class ItemDrag : MonoBehaviour
         }
     }
 
-    private void MoveToCell(Cell cell)
+    private void MoveToCell(Ground cell)
     {
         transform.DOMove(cell.transform.position + _offset, 0.25f).SetEase(Ease.Linear);
     }
@@ -95,14 +95,20 @@ public class ItemDrag : MonoBehaviour
         mousePos.z = 100;
         RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
 
-        if (hit.transform?.GetComponent<Cell>() == true)
-        {          
-            if (hit.transform.GetComponent<Cell>() != _targetCell)
+        if (hit.transform?.GetComponent<ICell>() == true)
+        {
+            ICell cell = hit.transform?.GetComponent<ICell>();
+            if (hit.transform?.GetComponent<Ground>() == true && cell != _targetCell)
             {
-                _targetCell = hit.transform.GetComponent<Cell>();
+                //if (hit.transform.GetComponent<Ground>() != _targetCell)
+                //{
+                    _targetCell = hit.transform.GetComponent<Ground>();
+                //}           
             }
-            return _targetCell.transform.position;
-        }
+
+            //return _targetCell.transform.position;
+            return cell.transform.position;
+        }           
         else if ((hit.transform?.GetComponent<Item>() == true) && (hit.transform?.GetComponent<Item>() != _item))
         {
             _targetCell = hit.transform.GetComponent<Item>().CurrentCell;

@@ -6,9 +6,9 @@ public class ItemMerger : MonoBehaviour
 {
     public static ItemMerger Instance { get; private set; }
     public static HashSet<Item> mergeItems;
+    public static HashSet<Ground> chekedNeighbors;
     public static bool IsMerging;
 
-    public static Cell lastCell;
     private void Awake()
     {
         if (Instance == null)
@@ -29,31 +29,37 @@ public class ItemMerger : MonoBehaviour
     /// <param name="callingCell"></param>
     /// <param name="isCaller"></param>
     /// <returns></returns>
-    public bool TryMergeItems(Item mergeItem, Cell callingCell, bool isCaller)
+    public bool TryMergeItems(Item mergeItem, Ground callingCell, bool isCaller)
     {
-        List<Cell> Neighbors = callingCell.GetNeighbors();
-
+        List<Ground> Neighbors = callingCell.GetNeighbors();
+        
         if (isCaller == true)
         {
             mergeItems = new HashSet<Item>();
+            chekedNeighbors = new HashSet<Ground>();
+
             mergeItems.Add(mergeItem);
             mergeItems.Add(callingCell.ContentItem);
-            lastCell = callingCell;
         }
         else
         {
-            Neighbors.Remove(lastCell);
+            foreach (var neighbor in chekedNeighbors)
+            {
+                if (Neighbors.Contains(neighbor))
+                {
+                    Neighbors.Remove(neighbor);
+                }
+            }
         }
 
         foreach (var neighbor in Neighbors)
         {
-            lastCell = callingCell;
+            chekedNeighbors.Add(callingCell);
             if (neighbor.ContentItem != null && neighbor.ContentItem.Phase == mergeItem.Phase)
             {
                 mergeItems.Add(neighbor.ContentItem);
                 TryMergeItems(mergeItem, neighbor, false);
             }
-
         }
 
         if (isCaller)
@@ -67,7 +73,7 @@ public class ItemMerger : MonoBehaviour
         return false;
     }
 
-    private void MergeItems(Cell cell, Item mergeItem)
+    private void MergeItems(Ground cell, Item mergeItem)
     {
         Debug.Log($"Merging {mergeItems.Count} items");
         int nextItemPhaseId = mergeItem.Phase + 1;
@@ -76,7 +82,7 @@ public class ItemMerger : MonoBehaviour
             .Then(() => CreateNextItem(cell, nextItemPhaseId));
     }
 
-    private IPromise MoveItemToCell(Cell cell)
+    private IPromise MoveItemToCell(Ground cell)
     {
         var promises = new List<IPromise>();
 
@@ -96,7 +102,7 @@ public class ItemMerger : MonoBehaviour
         return Promise.Resolved();
     }
 
-    private IPromise CreateNextItem(Cell cell, int nextItemPhaseId)
+    private IPromise CreateNextItem(Ground cell, int nextItemPhaseId)
     {
         Debug.Log("Создаю новый предмет:");
         var promise = new Promise();

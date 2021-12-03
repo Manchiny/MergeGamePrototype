@@ -21,7 +21,7 @@ public class ItemFabric : MonoBehaviour
         }
         Destroy(gameObject);
     }
-    public void CreateItem(Cell cell, int newPhaseID)
+    public void CreateItem(Ground cell, int newPhaseID)
     {
         GameObject newItem = Instantiate(_itemPrefab, cell.transform.position + _offset, Quaternion.identity);
         Item item = newItem.GetComponent<Item>();
