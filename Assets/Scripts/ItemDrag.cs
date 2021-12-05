@@ -42,7 +42,7 @@ public class ItemDrag : MonoBehaviour
             {
                 if (ItemMerger.Instance.TryMergeItems(_item, _targetCell, true) == true)
                 {
-                    Debug.Log("Merge succses");
+                    Debug.Log("Merge success");
                     MoveToCell(_targetCell);
                 }
                 else

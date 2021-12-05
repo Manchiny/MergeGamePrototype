@@ -6,10 +6,10 @@ using System.Linq;
 public class ItemMerger : MonoBehaviour
 {
     public static ItemMerger Instance { get; private set; }
-    public static HashSet<Item> mergeItems;
-    public static HashSet<Ground> chekedCells;
-    public static HashSet<Ground> freeCells;
-    public static bool IsMerging;
+
+    private HashSet<Item> mergeItems;
+    private HashSet<Ground> chekedCells;
+    private HashSet<Ground> freeCells;
 
     private void Awake()
     {
@@ -18,7 +18,6 @@ public class ItemMerger : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            IsMerging = false;
             return;
         }
         Destroy(gameObject);
@@ -149,6 +148,11 @@ public class ItemMerger : MonoBehaviour
         {
             foreach (var cell in chekedCells)
             {
+                if (freeCells.Count >= count)
+                {
+                    Debug.Log($"{freeCells.Count} positions finded successful 1");
+                    return true;
+                }
                 if (neighbors.Contains(cell))
                 {
                     neighbors.Remove(cell);
@@ -165,7 +169,7 @@ public class ItemMerger : MonoBehaviour
                 freeCells.Add(cell);
                 if (freeCells.Count >= count)
                 {
-                    Debug.Log($"{freeCells.Count} positions finded successful 1");
+                    Debug.Log($"{freeCells.Count} positions finded successful");
                     return true;
                 }
                 else
@@ -179,7 +183,7 @@ public class ItemMerger : MonoBehaviour
         {
             if (freeCells.Count >= count)
             {
-                Debug.Log($"{freeCells.Count} positions finded successful");
+                Debug.Log($"{freeCells.Count} positions finded successful 0");
                 return true;
             }
             else
