@@ -32,7 +32,7 @@ public class ItemMerger : MonoBehaviour
     /// <returns></returns>
     public bool TryMergeItems(Item mergeItem, Ground callingCell, bool isCaller)
     {
-        List<Ground> Neighbors = callingCell.GetNeighbors();
+        HashSet<Ground> neighbors = callingCell.GetNeighbors();
         
         if (isCaller == true)
         {
@@ -46,17 +46,17 @@ public class ItemMerger : MonoBehaviour
         {
             foreach (var cell in chekedCells)
             {
-                if (Neighbors.Contains(cell))
+                if (neighbors.Contains(cell))
                 {
-                    Neighbors.Remove(cell);
+                    neighbors.Remove(cell);
                 }
             }
         }
 
-        foreach (var cell in Neighbors)
+        foreach (var cell in neighbors)
         {
             chekedCells.Add(callingCell);
-            if (cell.ContentItem != null && cell.ContentItem.Phase == mergeItem.Phase)
+            if (cell.ContentItem != null && cell.ContentItem.ItemID == mergeItem.ItemID && cell.ContentItem.Stage == mergeItem.Stage)
             {
                 mergeItems.Add(cell.ContentItem);
                 TryMergeItems(mergeItem, cell, false);
@@ -76,18 +76,36 @@ public class ItemMerger : MonoBehaviour
 
     private void MergeItems(Ground cell, Item mergeItem)
     {
-        int countForMerge = 3;
-        int itemsNewPhase = mergeItems.Count / countForMerge;
-        int itemsOldPhase = mergeItems.Count % countForMerge;
-        Debug.Log($"Merging {mergeItems.Count} items, old phase count = {itemsOldPhase}, new phase count = {itemsNewPhase} ");
+        int minCountForMerge = 3;
+        int bonusMerge = 5;
+        int bonusItems = mergeItems.Count / bonusMerge;
+        int itemsNewStage = 0; /*= mergeItems.Count / minCountForMerge;*/
+        int itemsOldStage = 0;
+        if (mergeItems.Count >= bonusMerge)
+        {
+            int a = mergeItems.Count - bonusItems * bonusMerge; // предметов осталось после вычета бонусного мерджа
+            int b = (a / minCountForMerge) * minCountForMerge; // сколько предметов мерджится из остатка (забираеся из колекции)              
+            int c = mergeItems.Count - bonusItems * bonusMerge - b; // остаток общий
+                                                                    // 
+            itemsNewStage = bonusItems * 2 + b / minCountForMerge;
+            itemsOldStage = c;          
+        }
+        else
+        {
+            itemsNewStage = mergeItems.Count / minCountForMerge;
+            itemsOldStage = mergeItems.Count % minCountForMerge;
+        }
 
-        int nextItemPhaseId = mergeItem.Phase + 1;
+        Debug.Log($"Merging {mergeItems.Count} items, old phase count = {itemsOldStage}, new phase count = {itemsNewStage} ");
 
-        MoveItemToCell(cell)
-            .Then(() => CreateNextPhaseItems(cell, nextItemPhaseId, itemsNewPhase, itemsOldPhase));
+        int itemID = mergeItem.ItemID;
+        int nextStageId = mergeItem.Stage + 1;
+
+        MoveItemsToCellAndDestroy(cell)
+            .Then(() => CreateNextPhaseItems(cell, itemID, nextStageId, itemsNewStage, itemsOldStage));
     }
 
-    private IPromise MoveItemToCell(Ground cell)
+    private IPromise MoveItemsToCellAndDestroy(Ground cell)
     {
         var promises = new List<IPromise>();
 
@@ -103,31 +121,32 @@ public class ItemMerger : MonoBehaviour
     }
     private IPromise DestroyItem(Item item)
     {
-        Destroy(item.gameObject);
+        //Destroy(item.gameObject);
+        item.RemoveItem();
         return Promise.Resolved();
     }
 
-    private IPromise CreateNextPhaseItems(Ground cell, int nextItemPhaseId, int newPhaseItemsCount, int oldPhaseItemsCount)
+    private IPromise CreateNextPhaseItems(Ground cell, int itemID, int nextItemStageId, int newStageItemsCount, int oldStageItemsCount)
     {
         Debug.Log("Создаю новый предмет:");
         var promise = new Promise();
 
-        ItemFabric.Instance.CreateItem(cell, nextItemPhaseId);
+        ItemFabric.Instance.CreateItem(cell, itemID, nextItemStageId);
 
-        if(newPhaseItemsCount+ oldPhaseItemsCount > 1)
+        if(newStageItemsCount+ oldStageItemsCount > 1)
         {  
-            FindFreeCells(cell, newPhaseItemsCount - 1 + oldPhaseItemsCount, true);
+            FindFreeCells(cell, newStageItemsCount - 1 + oldStageItemsCount, true);
             var cells = freeCells.ToArray();
 
             int counter = 0;
-            for (int i = 0; i < newPhaseItemsCount-1; i++)
+            for (int i = 0; i < newStageItemsCount-1; i++)
             {
-                ItemFabric.Instance.CreateItem(cells[counter], nextItemPhaseId);
+                ItemFabric.Instance.CreateItem(cells[counter], itemID, nextItemStageId);
                 counter++; 
             }
-            for (int i = 0; i < oldPhaseItemsCount; i++)
+            for (int i = 0; i < oldStageItemsCount; i++)
             {
-                ItemFabric.Instance.CreateItem(cells[counter], nextItemPhaseId-1);
+                ItemFabric.Instance.CreateItem(cells[counter], itemID, nextItemStageId -1);
                 counter++;
             }
         }
@@ -137,7 +156,7 @@ public class ItemMerger : MonoBehaviour
 
     private bool FindFreeCells(Ground baseCell, int count, bool isCaller)
     {
-        List<Ground> neighbors = baseCell.GetNeighbors();
+        HashSet<Ground> neighbors = baseCell.GetNeighbors();
 
         if (isCaller == true)
         {
@@ -148,11 +167,6 @@ public class ItemMerger : MonoBehaviour
         {
             foreach (var cell in chekedCells)
             {
-                if (freeCells.Count >= count)
-                {
-                    Debug.Log($"{freeCells.Count} positions finded successful 1");
-                    return true;
-                }
                 if (neighbors.Contains(cell))
                 {
                     neighbors.Remove(cell);

@@ -5,26 +5,37 @@ using System;
 
 public class Item : MonoBehaviour
 {
-    [SerializeField] private int _phase;
-
-    public int Phase 
+   
+    [SerializeField] private int _itemID;
+    public int ItemID 
     { 
-        get => _phase;
+        get => Mathf.Clamp(_itemID, 0, StagesCount-1); 
+        private set 
+        { 
+            _itemID = Mathf.Clamp(value, 0, StagesCount - 1); 
+        } 
+    } 
+
+    [SerializeField] private int _stage;
+    [SerializeField] private GameObject[] _stageImages;
+    public int StagesCount { get => _stageImages.Length; }
+    public int Stage 
+    { 
+        get => _stage;
         private set
         {
-            _phase = value;
-            OnPhaseChanged?.Invoke();
+            _stage = value;
+            OnStageChanged?.Invoke();
         }
     }
 
     private void Start()
     {
-        OnPhaseChanged?.Invoke();
+        OnStageChanged?.Invoke();
     }
     public Ground CurrentCell { get; private set; }
 
-    public event Action OnPhaseChanged;
-
+    public event Action OnStageChanged;
     public IPromise MoveToMergCell(Ground cell )
     {
         var promise = new Promise();
@@ -63,8 +74,18 @@ public class Item : MonoBehaviour
         }
     }
 
-    public void SetPhase(int phaseID)
+    public void SetStage(int stageID)
     {
-        Phase = phaseID;
+        Stage = stageID;
+    }
+    public GameObject GetStageImage(int stageID)
+    {
+        return _stageImages[stageID];
+    }
+
+    public void RemoveItem()
+    {
+        SetCell(null);
+        Destroy(gameObject);
     }
 }

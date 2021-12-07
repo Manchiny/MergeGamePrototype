@@ -17,6 +17,12 @@ public class ItemDrag : MonoBehaviour
     }
     private void OnMouseDown()
     {
+        if(_item.Stage == _item.StagesCount-1)
+        {
+            _item.RemoveItem();
+            return;
+        }
+
         CameraController.Instance.IsItemDrag = true;
         _currentCell = _item.CurrentCell;
         _targetCell = null;
@@ -38,7 +44,7 @@ public class ItemDrag : MonoBehaviour
             {
                 MoveToCell(_targetCell);
             }
-            else if (_targetCell.ContentItem.Phase == _item.Phase)
+            else if (_targetCell.ContentItem.ItemID == _item.ItemID && _targetCell.ContentItem.Stage == _item.Stage)
             {
                 if (ItemMerger.Instance.TryMergeItems(_item, _targetCell, true) == true)
                 {
@@ -68,6 +74,7 @@ public class ItemDrag : MonoBehaviour
             _targetCell = _currentCell;
             MoveToCell(_targetCell);
         }
+
         _item.SetCell(_currentCell);
     }
 

@@ -12,9 +12,10 @@ public class Ground : ICell
     private float _xPos;
     private float _yPos;
 
-    public Item ContentItem { get; set; }
+    [SerializeField] private Item _contentItem;
+    public Item ContentItem { get => _contentItem; set { _contentItem = value; } }
 
-    private List<Ground> _neighbors;
+    private HashSet<Ground> _neighbors;
 
     private void Awake()
     {
@@ -39,11 +40,11 @@ public class Ground : ICell
         }
     }
 
-    public List<Ground> GetNeighbors()
+    public HashSet<Ground> GetNeighbors()
     {
         if (_neighbors == null)
         {
-            _neighbors = new List<Ground>();
+            _neighbors = new HashSet<Ground>();
 
             Collider2D[] hitColliders = Physics2D.OverlapBoxAll(transform.position, new Vector2(X_DISTANCE, Y_DISTANCE), 0f, _groundLayerMask);
             var groundCells = hitColliders.Where(x => x.GetComponent<Ground>() != null);
