@@ -88,4 +88,23 @@ public class Item : MonoBehaviour
         SetCell(null);
         Destroy(gameObject);
     }
+
+    public void FinaleStageDestroy()
+    {
+        ZoomAnimation().
+            Then(() => RemoveItem());
+    }
+
+    public IPromise ZoomAnimation()
+    {
+        var promise = new Promise();
+        Sequence sequence = DOTween.Sequence();
+        float scaleTime = 0.3f;
+
+        sequence.Append(transform.DOScale(1.1f, scaleTime / 3));
+        sequence.Append(transform.DOScale(0.2f, scaleTime));
+        sequence.OnComplete(promise.Resolve);
+
+        return promise;
+    }
 }

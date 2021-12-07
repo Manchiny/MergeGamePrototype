@@ -10,6 +10,7 @@ public class ItemDrag : MonoBehaviour
     private Item _item;
     private Ground _currentCell;
     private Ground _targetCell;
+    private bool _isDestroy;
     private void Awake()
     {
         _camera = Camera.main;
@@ -19,23 +20,31 @@ public class ItemDrag : MonoBehaviour
     {
         if(_item.Stage == _item.StagesCount-1)
         {
-            _item.RemoveItem();
-            return;
+            _isDestroy = true;
+            _item.FinaleStageDestroy();
         }
-
-        CameraController.Instance.IsItemDrag = true;
-        _currentCell = _item.CurrentCell;
-        _targetCell = null;
-        _item.SetCell(null);
+        else
+        {
+            CameraController.Instance.IsItemDrag = true;
+            _currentCell = _item.CurrentCell;
+            _targetCell = null;
+            _item.SetCell(null);
+        }     
     }
 
     private void OnMouseDrag()
     {
+        if (_isDestroy)
+            return;
+
         transform.position = Vector3.MoveTowards(transform.position, GetTargetPosition(), _dragSpeed * Time.deltaTime);
     }
 
     private void OnMouseUp()
     {
+        if (_isDestroy)
+            return;
+
         CameraController.Instance.IsItemDrag = false;
 
         if (_targetCell != null)
