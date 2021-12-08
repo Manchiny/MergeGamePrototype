@@ -32,8 +32,13 @@ public class ItemMerger : MonoBehaviour
     /// <returns></returns>
     public bool TryMergeItems(Item mergeItem, Ground callingCell, bool isCaller)
     {
-        HashSet<Ground> neighbors = callingCell.GetNeighbors();
-        
+        HashSet<Ground> neighbors = new HashSet<Ground>();
+
+        foreach (var cell in callingCell.GetNeighbors())
+        {
+            neighbors.Add(cell);
+        }
+
         if (isCaller == true)
         {
             mergeItems = new HashSet<Item>();
@@ -156,7 +161,12 @@ public class ItemMerger : MonoBehaviour
 
     private bool FindFreeCells(Ground baseCell, int count, bool isCaller)
     {
-        HashSet<Ground> neighbors = baseCell.GetNeighbors();
+        HashSet<Ground> neighbors = new HashSet<Ground>();
+
+        foreach (var cell in baseCell.GetNeighbors())
+        {
+            neighbors.Add(cell);
+        }
 
         if (isCaller == true)
         {

@@ -5,26 +5,22 @@ using System;
 
 public class Item : MonoBehaviour
 {
-   
+
     [SerializeField] private int _itemID;
-    public int ItemID 
-    { 
-        get => Mathf.Clamp(_itemID, 0, StagesCount-1); 
-        private set 
-        { 
-            _itemID = Mathf.Clamp(value, 0, StagesCount - 1); 
-        } 
-    } 
+    public int ItemID
+    {
+        get => _itemID;
+    }
 
     [SerializeField] private int _stage;
     [SerializeField] private GameObject[] _stageImages;
     public int StagesCount { get => _stageImages.Length; }
-    public int Stage 
-    { 
-        get => _stage;
+    public int Stage
+    {
+        get => Mathf.Clamp(_stage, 0, StagesCount - 1);
         private set
         {
-            _stage = value;
+            _stage = Mathf.Clamp(value, 0, StagesCount - 1);
             OnStageChanged?.Invoke();
         }
     }
@@ -36,7 +32,7 @@ public class Item : MonoBehaviour
     public Ground CurrentCell { get; private set; }
 
     public event Action OnStageChanged;
-    public IPromise MoveToMergCell(Ground cell )
+    public IPromise MoveToMergCell(Ground cell)
     {
         var promise = new Promise();
         float moveTime = 0.25f;
@@ -44,7 +40,7 @@ public class Item : MonoBehaviour
         Sequence sequence = DOTween.Sequence();
 
         sequence.Append(transform.DOMove(cell.transform.position, moveTime).SetEase(Ease.Linear));
-        sequence.Append(transform.DOScale(1.1f, scaleTime/2));
+        sequence.Append(transform.DOScale(1.1f, scaleTime / 2));
         sequence.Append(transform.DOScale(0.9f, scaleTime));
         sequence.OnComplete(promise.Resolve);
 
@@ -102,7 +98,7 @@ public class Item : MonoBehaviour
         float scaleTime = 0.3f;
 
         sequence.Append(transform.DOScale(1.1f, scaleTime / 3));
-        sequence.Append(transform.DOScale(0.2f, scaleTime));
+        sequence.Append(transform.DOScale(0.0f, scaleTime));
         sequence.OnComplete(promise.Resolve);
 
         return promise;
